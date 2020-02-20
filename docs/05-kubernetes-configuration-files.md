@@ -33,7 +33,7 @@ When generating kubeconfig files for Kubelets the client certificate matching th
 Generate a kubeconfig file for each worker node:
 
 ```
-for instance in worker-0 worker-1 worker-2; do
+for instance in worker-0 worker-1; do
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
     --embed-certs=true \
