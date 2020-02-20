@@ -154,10 +154,15 @@ EOF
 ```
 
 ```
+{
+
+   
   sudo systemctl daemon-reload
   sudo systemctl enable kube-apiserver  
   sudo systemctl start kube-apiserver  
   sudo systemctl status kube-apiserver  
+
+}
   ```
 En mi caso tuve el problema 
 

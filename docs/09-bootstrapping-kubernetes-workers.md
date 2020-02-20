@@ -285,9 +285,13 @@ EOF
   sudo systemctl daemon-reload
   sudo systemctl enable containerd kubelet kube-proxy
   sudo systemctl start containerd kubelet kube-proxy
+
+  
 }
 ```
-
+ sudo systemctl enable   kubelet
+  sudo systemctl start   kubelet
+  sudo systemctl status   kubelet
 > Remember to run the above commands on each worker node: `worker-0`, `worker-1`, and `worker-2`.
 
 ## Verification
@@ -297,8 +301,7 @@ EOF
 List the registered Kubernetes nodes:
 
 ```
-gcloud compute ssh controller-0 \
-  --command "kubectl get nodes --kubeconfig admin.kubeconfig"
+gcloud compute ssh controller-0 --command "kubectl get nodes --kubeconfig admin.kubeconfig"
 ```
 
 > output

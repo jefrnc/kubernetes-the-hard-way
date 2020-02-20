@@ -198,6 +198,15 @@ PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca 
 2020/02/20 12:37:26 [INFO] generating key: rsa-2048
 2020/02/20 12:37:26 [INFO] encoded CSR
 2020/02/20 12:37:26 [INFO] signed certificate with serial number 716200621200550963418401329895159922150473628077
+
+
+$INTERNAL_IP=$(gcloud compute instances describe worker-1 --format 'value(networkInterfaces[0].accessConfigs[0].natIP)') 
+$EXTERNAL_IP=$(gcloud compute instances describe worker-1 --format 'value(networkInterfaces[0].networkIP)')
+
+cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-hostname worker-1,$EXTERNAL_IP,$INTERNAL_IP -profile kubernetes worker-1-csr.json | cfssljson -bare worker-1
+
+
 ```
 
 Results:

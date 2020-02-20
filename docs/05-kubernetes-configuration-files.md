@@ -57,8 +57,11 @@ done
 
 Powershell
 ```
+
+$KUBERNETES_HTTPS_PUBLIC_ADDRESS= "https://" + $KUBERNETES_PUBLIC_ADDRESS + ":6443"
+
 #creamos para el worker 0
-kubectl config set-cluster kubernetes-the-hard-way --certificate-authority ca.pem  --embed-certs=true --server https://$KUBERNETES_PUBLIC_ADDRESS:6443  --kubeconfig worker-0.kubeconfig
+kubectl config set-cluster kubernetes-the-hard-way --certificate-authority ca.pem  --embed-certs=true --server $KUBERNETES_HTTPS_PUBLIC_ADDRESS  --kubeconfig worker-0.kubeconfig
 
 kubectl config set-credentials system:node:worker-0 --client-certificate worker-0.pem --client-key=worker-0-key.pem --embed-certs=true --kubeconfig=worker-0.kubeconfig
 
@@ -69,7 +72,7 @@ kubectl config use-context default --kubeconfig=worker-0.kubeconfig
 
 #creamos para el worker 1
 
-kubectl config set-cluster kubernetes-the-hard-way --certificate-authority ca.pem  --embed-certs=true --server https://$KUBERNETES_PUBLIC_ADDRESS:6443  --kubeconfig worker-1.kubeconfig
+kubectl config set-cluster kubernetes-the-hard-way --certificate-authority ca.pem  --embed-certs=true --server $KUBERNETES_HTTPS_PUBLIC_ADDRESS  --kubeconfig worker-1.kubeconfig
 
 kubectl config set-credentials system:node:worker-1 --client-certificate worker-0.pem --client-key=worker-1-key.pem --embed-certs=true --kubeconfig=worker-1.kubeconfig
 
