@@ -4,6 +4,10 @@ Kubernetes requires a set of machines to host the Kubernetes control plane and t
 
 > Ensure a default compute zone and region have been set as described in the [Prerequisites](01-prerequisites.md#set-a-default-compute-region-and-zone) lab.
 
+> Estos temas son importante produndizar, el ultimo es sobre diseno.
+https://cloud.google.com/compute/docs/regions-zones
+https://cloud.google.com/compute/docs/tutorials/robustsystems
+
 ## Networking
 
 The Kubernetes [networking model](https://kubernetes.io/docs/concepts/cluster-administration/networking/#kubernetes-model) assumes a flat network in which containers and nodes can communicate with each other. In cases where this is not desired [network policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) can limit how groups of containers are allowed to communicate with each other and external network endpoints.
@@ -29,8 +33,26 @@ gcloud compute networks subnets create kubernetes \
   --network kubernetes-the-hard-way \
   --range 10.240.0.0/24
 ```
+o
+```
+gcloud compute networks subnets create kubernetes --network kubernetes-the-hard-way --range 10.240.0.0/24
+```
+
+// Tuve que asociar el perfil de facturacion sino no podia continuar.
 
 > The `10.240.0.0/24` IP address range can host up to 254 compute instances.
+
+> Output
+
+```
+PS C:\Repos\kubernetes-the-hard-way> gcloud compute networks subnets create kubernetes --network kubernetes-the-hard-way --range 10.240.0.0/24  
+Created [https://www.googleapis.com/compute/v1/projects/jsfrnc-k8s-bootcamp/regions/us-west1/subnetworks/kubernetes].
+NAME        REGION    NETWORK                  RANGE
+kubernetes  us-west1  kubernetes-the-hard-way  10.240.0.0/24
+```
+
+No sabes que significa el /24?
+https://www.enmimaquinafunciona.com/pregunta/2037/que-es-la-barra-despues-de-la-ip
 
 ### Firewall Rules
 
@@ -42,6 +64,22 @@ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal \
   --network kubernetes-the-hard-way \
   --source-ranges 10.240.0.0/24,10.200.0.0/16
 ```
+o
+
+```
+gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal --allow tcp,udp,icmp --network kubernetes-the-hard-way --source-ranges 10.240.0.0/24,10.200.0.0/16
+```
+
+> Output
+
+```
+PS C:\Repos\kubernetes-the-hard-way> gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal --allow tcp,udp,icmp --network 
+kubernetes-the-hard-way --source-ranges 10.240.0.0/24,10.200.0.0/16
+Creating firewall...|Created [https://www.googleapis.com/compute/v1/projects/jsfrnc-k8s-bootcamp/global/firewalls/kubernetes-the-hard-way-allow-internal].
+Creating firewall...done.
+NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW         DENY  DISABLED
+kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp        False
+```
 
 Create a firewall rule that allows external SSH, ICMP, and HTTPS:
 
@@ -50,6 +88,21 @@ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external \
   --allow tcp:22,tcp:6443,icmp \
   --network kubernetes-the-hard-way \
   --source-ranges 0.0.0.0/0
+```
+o
+
+```
+gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external --allow tcp:22,tcp:6443,icmp --network kubernetes-the-hard-way --source-ranges 0.0.0.0/0
+```
+
+> Output
+
+```
+PS C:\Repos\kubernetes-the-hard-way> gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external --allow tcp:22,tcp:6443,icmp --network kubernetes-the-hard-way --source-ranges 0.0.0.0/0
+Creating firewall...|Created [https://www.googleapis.com/compute/v1/projects/jsfrnc-k8s-bootcamp/global/firewalls/kubernetes-the-hard-way-allow-external].
+Creating firewall...done.
+NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY  DISABLED
+kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp        False
 ```
 
 > An [external load balancer](https://cloud.google.com/compute/docs/load-balancing/network/) will be used to expose the Kubernetes API Servers to remote clients.
@@ -63,9 +116,12 @@ gcloud compute firewall-rules list --filter="network:kubernetes-the-hard-way"
 > output
 
 ```
-NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY
-kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp
-kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp
+NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY  DISABLED
+kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp        False
+kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp                False
+
+To show all fields of the firewall, please show in JSON format: --format=json
+To show all fields in table format, please see the examples in --help.
 ```
 
 ### Kubernetes Public IP Address
@@ -73,8 +129,7 @@ kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000
 Allocate a static IP address that will be attached to the external load balancer fronting the Kubernetes API Servers:
 
 ```
-gcloud compute addresses create kubernetes-the-hard-way \
-  --region $(gcloud config get-value compute/region)
+gcloud compute addresses create kubernetes-the-hard-way --region $(gcloud config get-value compute/region)
 ```
 
 Verify the `kubernetes-the-hard-way` static IP address was created in your default compute region:
@@ -86,8 +141,8 @@ gcloud compute addresses list --filter="name=('kubernetes-the-hard-way')"
 > output
 
 ```
-NAME                     REGION    ADDRESS        STATUS
-kubernetes-the-hard-way  us-west1  XX.XXX.XXX.XX  RESERVED
+NAME                     ADDRESS/RANGE  TYPE      PURPOSE  NETWORK  REGION    SUBNET  STATUS
+kubernetes-the-hard-way  35.230.0.46    EXTERNAL                    us-west1          RESERVED
 ```
 
 ## Compute Instances
@@ -112,6 +167,21 @@ for i in 0 1 2; do
     --subnet kubernetes \
     --tags kubernetes-the-hard-way,controller
 done
+```
+
+Como en mi caso estoy usando powershell hice esto
+
+
+```
+For ($i=0; $i -le 2; $i++) { gcloud compute instances create controller-$i --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --private-network-ip 10.240.0.1$i --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,controller }
+```
+
+> Verificamos que se hayan creado, con gcloud compute instances list
+```
+NAME          ZONE        MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP    STATUS
+controller-0  us-west1-c  n1-standard-1               10.240.0.10  34.83.233.222  RUNNING
+controller-1  us-west1-c  n1-standard-1               10.240.0.11  34.83.77.97    RUNNING
+controller-2  us-west1-c  n1-standard-1               10.240.0.12  104.198.105.9  RUNNING
 ```
 
 ### Kubernetes Workers
@@ -139,7 +209,16 @@ for i in 0 1 2; do
 done
 ```
 
+```
+gcloud compute instances create worker-$i --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.$i.0/24 --private-network-ip 10.240.0.2$i --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
+
+gcloud compute instances create worker-1 --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.1.0/24 --private-network-ip 10.240.0.21 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
+
+gcloud compute instances create worker-2  --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.2.0/24 --private-network-ip 10.240.0.22 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
+```
+
 ### Verification
+
 
 List the compute instances in your default compute zone:
 
@@ -158,6 +237,23 @@ worker-0      us-west1-c  n1-standard-1               10.240.0.20  XXX.XXX.XXX.X
 worker-1      us-west1-c  n1-standard-1               10.240.0.21  XX.XXX.XX.XXX   RUNNING
 worker-2      us-west1-c  n1-standard-1               10.240.0.22  XXX.XXX.XX.XX   RUNNING
 ```
+
+Encontre el siguiente error en una cuenta Trial
+
+```
+ERROR: (gcloud.compute.instances.create) Could not fetch resource:
+ - Quota 'IN_USE_ADDRESSES' exceeded.  Limit: 4.0 in region us-west1.
+```
+
+En la version trial solo nos permite solo 4 equipos levantado, asi que optamos 2 controller y 2 workers.
+
+```
+controller-0  us-west1-c  n1-standard-1               10.240.0.10  34.83.233.222   RUNNING
+controller-1  us-west1-c  n1-standard-1               10.240.0.11  34.83.77.97     RUNNING
+worker-0      us-west1-c  n1-standard-1               10.240.0.20  35.230.104.128  RUNNING
+worker-1      us-west1-c  n1-standard-1               10.240.0.21  34.82.223.214   RUNNING
+```
+
 
 ## Configuring SSH Access
 

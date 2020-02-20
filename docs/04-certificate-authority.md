@@ -51,11 +51,31 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 }
 ```
 
+```
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+2020/02/20 12:07:02 [INFO] generating a new CA key and certificate from CSR
+2020/02/20 12:07:02 [INFO] generate received request
+2020/02/20 12:07:02 [INFO] received CSR
+2020/02/20 12:07:02 [INFO] generating key: rsa-2048
+2020/02/20 12:07:03 [INFO] encoded CSR
+2020/02/20 12:07:03 [INFO] signed certificate with serial number 442797245969943793060276030632295796809356798029
+```
 Results:
 
 ```
-ca-key.pem
-ca.pem
+$ ls
+
+
+    Directory: C:\Repos\kubernetes-the-hard-way\deployments\certificates
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        2/20/2020  12:05 PM            267 ca-config.json
+-a----        2/20/2020  12:06 PM            253 ca-csr.json
+-a----        2/20/2020  12:07 PM           1679 ca-key.pem
+-a----        2/20/2020  12:07 PM           1005 ca.csr
+-a----        2/20/2020  12:07 PM           1318 ca.pem
 ```
 
 ## Client and Server Certificates
@@ -98,6 +118,22 @@ cfssl gencert \
 }
 ```
 
+
+En powershell
+```
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json -profile kubernetes  admin-csr.json  | cfssljson -bare admin
+2020/02/20 12:15:33 [INFO] generate received request
+2020/02/20 12:15:33 [INFO] received CSR
+2020/02/20 12:15:33 [INFO] generating key: rsa-2048
+2020/02/20 12:15:33 [INFO] encoded CSR
+2020/02/20 12:15:33 [INFO] signed certificate with serial number 112712162943755742877086230686996897978870329831
+2020/02/20 12:15:33 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+websites. For more information see the Baseline Requirements for the Issuance and Management
+of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+specifically, section 10.2.3 ("Information Requirements").
+```
+
+ 
 Results:
 
 ```
@@ -148,6 +184,22 @@ cfssl gencert \
 done
 ```
 
+$instance = "worker-1"
+$INTERNAL_IP=$(gcloud compute instances describe ${instance} --format 'value(networkInterfaces[0].accessConfigs[0].natIP)') 
+$EXTERNAL_IP=$(gcloud compute instances describe ${i]nstance} --format 'value(networkInterfaces[0].networkIP)')
+ 
+cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json -hostname ${instance},$EXTERNAL_IP,$INTERNAL_IP -profile kubernetes ${instance}-csr.json | cfssljson -bare ${instance}
+
+```
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-hostname ${instance},$EXTERNAL_IP,$INTERNAL_IP -profile kubernetes ${instance}-csr.json | cfssljson -bare ${instance}
+2020/02/20 12:37:26 [INFO] generate received request
+2020/02/20 12:37:26 [INFO] received CSR
+2020/02/20 12:37:26 [INFO] generating key: rsa-2048
+2020/02/20 12:37:26 [INFO] encoded CSR
+2020/02/20 12:37:26 [INFO] signed certificate with serial number 716200621200550963418401329895159922150473628077
+```
+
 Results:
 
 ```
@@ -195,6 +247,21 @@ cfssl gencert \
 }
 ```
 
+Powershell
+```
+S C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-profile kubernetes kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
+2020/02/20 12:40:18 [INFO] generate received request
+2020/02/20 12:40:18 [INFO] received CSR
+2020/02/20 12:40:18 [INFO] generating key: rsa-2048
+2020/02/20 12:40:19 [INFO] encoded CSR
+2020/02/20 12:40:19 [INFO] signed certificate with serial number 204848304204613875897381309497922704295430947869
+2020/02/20 12:40:19 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+websites. For more information see the Baseline Requirements for the Issuance and Management
+of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+specifically, section 10.2.3 ("Information Requirements").
+```
+
 Results:
 
 ```
@@ -239,6 +306,22 @@ cfssl gencert \
 }
 ```
 
+Powershell
+```
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-profile kubernetes kube-proxy-csr.json | cfssljson -bare kube-proxy
+2020/02/20 12:43:55 [INFO] generate received request
+2020/02/20 12:43:55 [INFO] received CSR
+2020/02/20 12:43:55 [INFO] generating key: rsa-2048
+2020/02/20 12:43:55 [INFO] encoded CSR
+2020/02/20 12:43:55 [INFO] signed certificate with serial number 601918434556005684405799074630388509260784944254
+2020/02/20 12:43:55 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+websites. For more information see the Baseline Requirements for the Issuance and Management
+of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+specifically, section 10.2.3 ("Information Requirements").
+```
+
+
 Results:
 
 ```
@@ -281,6 +364,22 @@ cfssl gencert \
 
 }
 ```
+
+Powershell
+```
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-profile kubernetes kube-scheduler-csr.json | cfssljson -bare kube-scheduler
+2020/02/20 12:48:53 [INFO] generate received request
+2020/02/20 12:48:53 [INFO] received CSR
+2020/02/20 12:48:53 [INFO] generating key: rsa-2048
+2020/02/20 12:48:53 [INFO] encoded CSR
+2020/02/20 12:48:53 [INFO] signed certificate with serial number 178643106759854782720106517255774453007825702692
+2020/02/20 12:48:53 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+websites. For more information see the Baseline Requirements for the Issuance and Management
+of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+specifically, section 10.2.3 ("Information Requirements").
+```
+
 
 Results:
 
@@ -335,6 +434,25 @@ cfssl gencert \
 }
 ```
 
+
+Powershell
+```
+{
+
+$KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way --region $(gcloud config get-value compute/region) --format 'value(address)')
+
+$KUBERNETES_HOSTNAMES="kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local"
+ 
+cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-hostname 10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,$KUBERNETES_PUBLIC_ADDRESS,127.0.0.1,$KUBERNETES_HOSTNAMES -profile kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+2020/02/20 12:52:35 [INFO] generate received request
+2020/02/20 12:52:35 [INFO] received CSR
+2020/02/20 12:52:35 [INFO] generating key: rsa-2048
+2020/02/20 12:52:36 [INFO] encoded CSR
+2020/02/20 12:52:36 [INFO] signed certificate with serial number 143287199578473065350415820796734076238444439283
+
+```
+
 > The Kubernetes API server is automatically assigned the `kubernetes` internal dns name, which will be linked to the first IP address (`10.32.0.1`) from the address range (`10.32.0.0/24`) reserved for internal cluster services during the [control plane bootstrapping](08-bootstrapping-kubernetes-controllers.md#configure-the-kubernetes-api-server) lab.
 
 Results:
@@ -382,6 +500,21 @@ cfssl gencert \
 }
 ```
 
+Powershell
+```
+cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
+-profile kubernetes service-account-csr.json | cfssljson -bare service-account
+2020/02/20 12:54:28 [INFO] generate received request
+2020/02/20 12:54:28 [INFO] received CSR
+2020/02/20 12:54:28 [INFO] generating key: rsa-2048
+2020/02/20 12:54:28 [INFO] encoded CSR
+2020/02/20 12:54:28 [INFO] signed certificate with serial number 307095887903712464308280071040490174956389025702
+2020/02/20 12:54:29 [WARNING] This certificate lacks a "hosts" field. This makes it unsuitable for
+websites. For more information see the Baseline Requirements for the Issuance and Management
+of Publicly-Trusted Certificates, v.1.1.6, from the CA/Browser Forum (https://cabforum.org);
+specifically, section 10.2.3 ("Information Requirements").
+```
+
 Results:
 
 ```
@@ -400,6 +533,18 @@ for instance in worker-0 worker-1 worker-2; do
 done
 ```
 
+Poweshell
+```
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> gcloud compute scp ca.pem worker-0-key.pem worker-0.pem worker-0:./
+ca.pem                    | 1 kB |   1.3 kB/s | ETA: 00:00:00 | 100%
+worker-0-key.pem          | 1 kB |   1.6 kB/s | ETA: 00:00:00 | 100%
+
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> gcloud compute scp ca.pem worker-1-key.pem worker-1.pem worker-1:./
+ca.pem                    | 1 kB |   1.3 kB/s | ETA: 00:00:00 | 100%
+worker-1-key.pem          | 1 kB |   1.6 kB/s | ETA: 00:00:00 | 100%
+worker-1.pem              | 1 kB |   1.5 kB/s | ETA: 00:00:00 | 100%
+```
+
 Copy the appropriate certificates and private keys to each controller instance:
 
 ```
@@ -407,6 +552,14 @@ for instance in controller-0 controller-1 controller-2; do
   gcloud compute scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
     service-account-key.pem service-account.pem ${instance}:~/
 done
+```
+
+Powershell
+
+```
+ 
+gcloud compute scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem controller-0:./
+gcloud compute scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem controller-1:./
 ```
 
 > The `kube-proxy`, `kube-controller-manager`, `kube-scheduler`, and `kubelet` client certificates will be used to generate client authentication configuration files in the next lab.
