@@ -168,21 +168,26 @@ for i in 0 1 2; do
     --tags kubernetes-the-hard-way,controller
 done
 ```
+  
 
-Como en mi caso estoy usando powershell hice esto
-
+Creo dos controller, ya que tengo restriccion por la cuenta de google.
 
 ```
-For ($i=0; $i -le 2; $i++) { gcloud compute instances create controller-$i --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --private-network-ip 10.240.0.1$i --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,controller }
+gcloud compute instances create controller-0 --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --private-network-ip 10.240.0.10 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,controller 
+
+gcloud compute instances create controller-1 --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --private-network-ip 10.240.0.11 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,controller 
 ```
 
-> Verificamos que se hayan creado, con gcloud compute instances list
+![Alt text](docs/images/image01.png?raw=true " ")
+
+ > Verificamos que se hayan creado, con gcloud compute instances list
 ```
 NAME          ZONE        MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP    STATUS
 controller-0  us-west1-c  n1-standard-1               10.240.0.10  34.83.233.222  RUNNING
 controller-1  us-west1-c  n1-standard-1               10.240.0.11  34.83.77.97    RUNNING
-controller-2  us-west1-c  n1-standard-1               10.240.0.12  104.198.105.9  RUNNING
 ```
+
+
 
 ### Kubernetes Workers
 
@@ -210,12 +215,14 @@ done
 ```
 
 ```
-gcloud compute instances create worker-$i --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.$i.0/24 --private-network-ip 10.240.0.2$i --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
+gcloud compute instances create worker-0 --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.0.0/24 --private-network-ip 10.240.0.20 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
 
 gcloud compute instances create worker-1 --async --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.1.0/24 --private-network-ip 10.240.0.21 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
 
-gcloud compute instances create worker-2  --boot-disk-size 200GB --can-ip-forward --image-family ubuntu-1804-lts --image-project ubuntu-os-cloud --machine-type n1-standard-1 --metadata pod-cidr=10.200.2.0/24 --private-network-ip 10.240.0.22 --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring --subnet kubernetes --tags kubernetes-the-hard-way,worker 
 ```
+
+![Alt text](docs/images/image02.png?raw=true " ")
+
 
 ### Verification
 
