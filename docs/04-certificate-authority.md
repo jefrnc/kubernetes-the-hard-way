@@ -203,8 +203,7 @@ PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> cfssl gencert -ca 
 $INTERNAL_IP=$(gcloud compute instances describe worker-1 --format 'value(networkInterfaces[0].accessConfigs[0].natIP)') 
 $EXTERNAL_IP=$(gcloud compute instances describe worker-1 --format 'value(networkInterfaces[0].networkIP)')
 
-cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json 
--hostname worker-1,$EXTERNAL_IP,$INTERNAL_IP -profile kubernetes worker-1-csr.json | cfssljson -bare worker-1
+cfssl gencert -ca ca.pem -ca-key ca-key.pem -config ca-config.json  -hostname worker-1,$EXTERNAL_IP,$INTERNAL_IP -profile kubernetes worker-1-csr.json | cfssljson -bare worker-1
 
 
 ```
@@ -544,11 +543,11 @@ done
 
 Poweshell
 ```
-PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> gcloud compute scp ca.pem worker-0-key.pem worker-0.pem worker-0:./
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> gcloud compute scp ca.pem worker-0-key.pem worker-0.pem worker-0:
 ca.pem                    | 1 kB |   1.3 kB/s | ETA: 00:00:00 | 100%
 worker-0-key.pem          | 1 kB |   1.6 kB/s | ETA: 00:00:00 | 100%
 
-PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> gcloud compute scp ca.pem worker-1-key.pem worker-1.pem worker-1:./
+PS C:\Repos\kubernetes-the-hard-way\deployments\certificates> gcloud compute scp ca.pem worker-1-key.pem worker-1.pem worker-1:
 ca.pem                    | 1 kB |   1.3 kB/s | ETA: 00:00:00 | 100%
 worker-1-key.pem          | 1 kB |   1.6 kB/s | ETA: 00:00:00 | 100%
 worker-1.pem              | 1 kB |   1.5 kB/s | ETA: 00:00:00 | 100%
