@@ -86,7 +86,7 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --etcd-cafile=/var/lib/kubernetes/ca.pem \\
   --etcd-certfile=/var/lib/kubernetes/kubernetes.pem \\
   --etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \\
-  --etcd-servers=https://10.240.0.10:2379,https://10.240.0.11:2379,https://10.240.0.12:2379 \\
+  --etcd-servers=https://10.240.0.10:2379,https://10.240.0.11:2379 \\
   --event-ttl=1h \\
   --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \\
   --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \\
@@ -171,9 +171,7 @@ En mi caso tuve el problema
 ```
 Esto se debio a que no tenia en el sistema la variable $ENCRYPTION_KEY que use al firmar los certificados.
 
-
-
-
+ 
 set ENCRYPTION_KEY= P0csXT8/Pz8/P20/Pz8/Bj8/P01oP2ApPyk/PxM/BD8NCg==
 echo $ENCRYPTION_KEY
 P0csXT8/Pz8/P20/Pz8/Bj8/P01oP2ApPyk/PxM/BD8NCg==
@@ -449,6 +447,7 @@ In this section you will provision an external load balancer to front the Kubern
 
 Create the external load balancer network resources:
 
+//todo:tiro error
 ```
 {
   KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
@@ -469,7 +468,7 @@ Create the external load balancer network resources:
     --http-health-check kubernetes
 
   gcloud compute target-pools add-instances kubernetes-target-pool \
-   --instances controller-0,controller-1,controller-2
+   --instances controller-0,controller-1
 
   gcloud compute forwarding-rules create kubernetes-forwarding-rule \
     --address ${KUBERNETES_PUBLIC_ADDRESS} \

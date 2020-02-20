@@ -307,10 +307,11 @@ gcloud compute ssh controller-0 --command "kubectl get nodes --kubeconfig admin.
 > output
 
 ```
+jsfrnc@DESKTOP-O2Q0294:~$ gcloud compute ssh controller-0 --command "kubectl get nodes --kubeconfig admin.kubeconfig"
 NAME       STATUS   ROLES    AGE   VERSION
-worker-0   Ready    <none>   15s   v1.15.3
-worker-1   Ready    <none>   15s   v1.15.3
-worker-2   Ready    <none>   15s   v1.15.3
+worker-0   Ready    <none>   37s   v1.15.3
+worker-1   Ready    <none>   34s   v1.15.3
+jsfrnc@DESKTOP-O2Q0294:~$                       
 ```
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)
