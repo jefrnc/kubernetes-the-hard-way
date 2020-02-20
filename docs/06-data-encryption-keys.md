@@ -11,6 +11,13 @@ Generate an encryption key:
 ```
 ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 ```
+Powershell
+
+```
+$ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
+echo $ENCRYPTION_KEY
+P0csXT8/Pz8/P20/Pz8/Bj8/P01oP2ApPyk/PxM/BD8NCg==
+```
 
 ## The Encryption Config File
 
@@ -39,5 +46,11 @@ for instance in controller-0 controller-1 controller-2; do
   gcloud compute scp encryption-config.yaml ${instance}:~/
 done
 ```
+Powershell
+```
+gcloud compute scp encryption-config.yaml controller-0:
+gcloud compute scp encryption-config.yaml controller-1:
+```
+
 
 Next: [Bootstrapping the etcd Cluster](07-bootstrapping-etcd.md)
