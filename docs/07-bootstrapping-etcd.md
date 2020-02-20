@@ -13,6 +13,7 @@ gcloud compute ssh controller-0
 ### Running commands in parallel with tmux
 
 [tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. See the [Running commands in parallel with tmux](01-prerequisites.md#running-commands-in-parallel-with-tmux) section in the Prerequisites lab.
+En mi caso use tambien https://www.fosshub.com/ConEmu.html
 
 ## Bootstrapping an etcd Cluster Member
 
@@ -21,8 +22,7 @@ gcloud compute ssh controller-0
 Download the official etcd release binaries from the [etcd](https://github.com/etcd-io/etcd) GitHub project:
 
 ```
-wget -q --show-progress --https-only --timestamping \
-  "https://github.com/etcd-io/etcd/releases/download/v3.4.0/etcd-v3.4.0-linux-amd64.tar.gz"
+wget -q --show-progress --https-only --timestamping "https://github.com/etcd-io/etcd/releases/download/v3.4.0/etcd-v3.4.0-linux-amd64.tar.gz"
 ```
 
 Extract and install the `etcd` server and the `etcdctl` command line utility:
@@ -122,6 +122,19 @@ sudo ETCDCTL_API=3 etcdctl member list \
 3a57933972cb5131, started, controller-2, https://10.240.0.12:2380, https://10.240.0.12:2379
 f98dc20bce6225a0, started, controller-0, https://10.240.0.10:2380, https://10.240.0.10:2379
 ffed16798470cab5, started, controller-1, https://10.240.0.11:2380, https://10.240.0.11:2379
+```
+
+En mi caso solo anda dos controladores, por el tema de las limitaciones de la cuenta trial
+```
+jefra@controller-0:~$ sudo ETCDCTL_API=3 etcdctl member list \
+>   --endpoints=https://127.0.0.1:2379 \
+>   --cacert=/etc/etcd/ca.pem \
+>   --cert=/etc/etcd/kubernetes.pem \
+>   --key=/etc/etcd/kubernetes-key.pem
+3a57933972cb5131, started, controller-2, https://10.240.0.12:2380, , false
+f98dc20bce6225a0, started, controller-0, https://10.240.0.10:2380, https://10.240.0.10:2379, false
+ffed16798470cab5, started, controller-1, https://10.240.0.11:2380, https://10.240.0.11:2379, false
+
 ```
 
 Next: [Bootstrapping the Kubernetes Control Plane](08-bootstrapping-kubernetes-controllers.md)

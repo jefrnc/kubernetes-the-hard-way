@@ -108,6 +108,72 @@ WantedBy=multi-user.target
 EOF
 ```
 
+En mi caso
+```
+cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/kubernetes/kubernetes
+
+[Service]
+ExecStart=/usr/local/bin/kube-apiserver \\
+  --advertise-address=${INTERNAL_IP} \\
+  --allow-privileged=true \\
+  --apiserver-count=2 \\
+  --audit-log-maxage=30 \\
+  --audit-log-maxbackup=3 \\
+  --audit-log-maxsize=100 \\
+  --audit-log-path=/var/log/audit.log \\
+  --authorization-mode=Node,RBAC \\
+  --bind-address=0.0.0.0 \\
+  --client-ca-file=/var/lib/kubernetes/ca.pem \\
+  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+  --etcd-cafile=/var/lib/kubernetes/ca.pem \\
+  --etcd-certfile=/var/lib/kubernetes/kubernetes.pem \\
+  --etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \\
+  --etcd-servers=https://10.240.0.10:2379,https://10.240.0.11:2379 \\
+  --event-ttl=1h \\
+  --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \\
+  --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \\
+  --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \\
+  --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \\
+  --kubelet-https=true \\
+  --runtime-config=api/all \\
+  --service-account-key-file=/var/lib/kubernetes/service-account.pem \\
+  --service-cluster-ip-range=10.32.0.0/24 \\
+  --service-node-port-range=30000-32767 \\
+  --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
+  --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \\
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+```
+  sudo systemctl daemon-reload
+  sudo systemctl enable kube-apiserver  
+  sudo systemctl start kube-apiserver  
+  sudo systemctl status kube-apiserver  
+  ```
+En mi caso tuve el problema 
+
+```
+ error while parsing encryption provider configuration file "/var/lib/kubernetes/encryption-config.yaml":
+```
+Esto se debio a que no tenia en el sistema la variable $ENCRYPTION_KEY que use al firmar los certificados.
+
+
+
+
+set ENCRYPTION_KEY= P0csXT8/Pz8/P20/Pz8/Bj8/P01oP2ApPyk/PxM/BD8NCg==
+echo $ENCRYPTION_KEY
+P0csXT8/Pz8/P20/Pz8/Bj8/P01oP2ApPyk/PxM/BD8NCg==
+
+
 ### Configure the Kubernetes Controller Manager
 
 Move the `kube-controller-manager` kubeconfig into place:
@@ -117,6 +183,35 @@ sudo mv kube-controller-manager.kubeconfig /var/lib/kubernetes/
 ```
 
 Create the `kube-controller-manager.service` systemd unit file:
+
+```
+cat <<EOF | sudo tee /etc/systemd/system/kube-controller-manager.service
+[Unit]
+Description=Kubernetes Controller Manager
+Documentation=https://github.com/kubernetes/kubernetes
+
+[Service]
+ExecStart=/usr/local/bin/kube-controller-manager \\
+  --address=0.0.0.0 \\
+  --cluster-cidr=10.200.0.0/16 \\
+  --cluster-name=kubernetes \\
+  --cluster-signing-cert-file=/var/lib/kubernetes/ca.pem \\
+  --cluster-signing-key-file=/var/lib/kubernetes/ca-key.pem \\
+  --kubeconfig=/var/lib/kubernetes/kube-controller-manager.kubeconfig \\
+  --leader-elect=true \\
+  --root-ca-file=/var/lib/kubernetes/ca.pem \\
+  --service-account-private-key-file=/var/lib/kubernetes/service-account-key.pem \\
+  --service-cluster-ip-range=10.32.0.0/24 \\
+  --use-service-account-credentials=true \\
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
 
 ```
 cat <<EOF | sudo tee /etc/systemd/system/kube-controller-manager.service
@@ -379,6 +474,55 @@ Create the external load balancer network resources:
 }
 ```
 
+En el equipo que generamos toda la provicion de equipos hacemos esto en powershell
+```
+  $KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way --region $(gcloud config get-value compute/region) --format 'value(address)')
+```
+
+  gcloud compute http-health-checks create kubernetes --description "Kubernetes Health Check" --host "kubernetes.default.svc.cluster.local" --request-path "/healthz"
+```
+
+> Output
+```
+NAME        HOST                                  PORT  REQUEST_PATH
+kubernetes  kubernetes.default.svc.cluster.local  80    /healthz
+```
+
+```
+  gcloud compute firewall-rules create kubernetes-the-hard-way-allow-health-check --network kubernetes-the-hard-way --source-ranges 209.85.152.0/22,209.85.204.0/22,35.191.0.0/16 --allow tcp
+```
+> Output
+```
+Creating firewall...done.
+NAME                                        NETWORK                  DIRECTION  PRIORITY  ALLOW  DENY  DISABLED
+kubernetes-the-hard-way-allow-health-check  kubernetes-the-hard-way  INGRESS    1000      tcp          False
+```
+
+```
+  gcloud compute target-pools create kubernetes-target-pool --http-health-check kubernetes
+```
+> Output
+```
+Created [https://www.googleapis.com/compute/v1/projects/jsfrnc-k8s-bootcamp/regions/us-west1/targetPools/kubernetes-target-pool].
+NAME                    REGION    SESSION_AFFINITY  BACKUP  HEALTH_CHECKS
+kubernetes-target-pool  us-west1  NONE                      kubernetes
+```
+```
+  gcloud compute target-pools add-instances kubernetes-target-pool --instances controller-0,controller-1
+```
+> Output
+```
+instances controller-0,controller-1
+Updated [https://www.googleapis.com/compute/v1/projects/jsfrnc-k8s-bootcamp/regions/us-west1/targetPools/kubernetes-target-pool].
+```
+```
+  gcloud compute forwarding-rules create kubernetes-forwarding-rule --address $KUBERNETES_PUBLIC_ADDRESS --ports 6443 --region $(gcloud config get-value compute/region) --target-pool kubernetes-target-pool
+```
+> Output
+```
+Created [https://www.googleapis.com/compute/v1/projects/jsfrnc-k8s-bootcamp/regions/us-west1/forwardingRules/kubernetes-forwarding-rule].
+```
+
 ### Verification
 
 > The compute instances created in this tutorial will not have permission to complete this section. **Run the following commands from the same machine used to create the compute instances**.
@@ -390,6 +534,12 @@ KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-har
   --region $(gcloud config get-value compute/region) \
   --format 'value(address)')
 ```
+En Powershell
+
+```
+$KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way --region $(gcloud config get-value compute/region) --format 'value(address)')
+```
+
 
 Make a HTTP request for the Kubernetes version info:
 
@@ -397,9 +547,10 @@ Make a HTTP request for the Kubernetes version info:
 curl --cacert ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}:6443/version
 ```
 
+ 
 > output
-
 ```
+jsfrnc@DESKTOP-O2Q0294:~$ curl --cacert ca.pem https:/35.230.0.46:6443/version
 {
   "major": "1",
   "minor": "15",
@@ -410,7 +561,10 @@ curl --cacert ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}:6443/version
   "goVersion": "go1.12.9",
   "compiler": "gc",
   "platform": "linux/amd64"
-}
 ```
+ 
+> output
+
+ 
 
 Next: [Bootstrapping the Kubernetes Worker Nodes](09-bootstrapping-kubernetes-workers.md)

@@ -16,7 +16,7 @@ Powershell
 ```
 $ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 echo $ENCRYPTION_KEY
-P0csXT8/Pz8/P20/Pz8/Bj8/P01oP2ApPyk/PxM/BD8NCg==
+RH9lqNleQXfXEkCKKKwlFeBD1d8wtCmaRjD0jXWvRSo=
 ```
 
 ## The Encryption Config File
@@ -38,6 +38,10 @@ resources:
       - identity: {}
 EOF
 ```
+
+
+//Ojo que lo hice en windows, al generarlo no me reemplazo con el valor de ENCRYPTION_KEY que tenia en el sistema.
+
 
 Copy the `encryption-config.yaml` encryption config file to each controller instance:
 

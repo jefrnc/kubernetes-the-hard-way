@@ -7,5 +7,5 @@ resources:
       - aescbc:
           keys:
             - name: key1
-              secret: ${ENCRYPTION_KEY}
+              secret: s2ZTG34T3zHukivQTQ3kC88OD+c71BqTKrbfILi67LM=
       - identity: {}
