@@ -161,7 +161,7 @@ In this section you will verify the ability to expose applications using a [Serv
 Expose the `nginx` deployment using a [NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport) service:
 
 ```
-kubectl expose deployment nginx --port 80 --type NodePort
+kubectl expose deployment nginx2 --port 80 --type NodePort
 ```
 
 > The LoadBalancer service type can not be used because your cluster is not configured with [cloud provider integration](https://kubernetes.io/docs/getting-started-guides/scratch/#cloud-provider). Setting up cloud provider integration is out of scope for this tutorial.
@@ -169,7 +169,7 @@ kubectl expose deployment nginx --port 80 --type NodePort
 Retrieve the node port assigned to the `nginx` service:
 
 ```
-NODE_PORT=$(kubectl get svc nginx \
+NODE_PORT=$(kubectl get svc nginx2 \
   --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
 ```
 
