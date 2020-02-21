@@ -6,6 +6,12 @@ Kubernetes The Hard Way is optimized for learning, which means taking the long r
 
 > The results of this tutorial should not be viewed as production ready, and may receive limited support from the community, but don't let that stop you from learning!
 
+## Comentarios adicionales
+
+En mi caso particular, hice toda esta guia tanto en windows como en ubuntu, agregue algunos comentarios que a mi me sirvieron. La unica limitante que encontre fue la restriccion de 4 computer engine dentro de la subscripcion de trial de google. Con lo cual solo use 2 controller y 2 worker.
+Esta muy interesante para profundizar cada aspecto, en el repositorio van a ver certificados y archivos generados, los cuales son solo como referencia ya que deberan generarlo de vuelta.
+
+
 ## Copyright
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
